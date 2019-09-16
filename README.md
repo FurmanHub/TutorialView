@@ -6,7 +6,7 @@
 
 > Design.
 
-###View Custom params (-)
+#View Custom params (-)
 
 - targets([UIView])
 - hints([String])
