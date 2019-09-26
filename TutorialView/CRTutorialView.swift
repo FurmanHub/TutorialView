@@ -178,6 +178,7 @@ class CRTutorialView: UIView {
     var borderView: UIView!
     var hintView: HintView!
     var titleLabel: UILabel!
+    var infoLabel: UILabel!
     var closeButton: UIButton!
     var backButton: UIButton!
     var nextButton: UIButton!
@@ -233,9 +234,11 @@ class CRTutorialView: UIView {
             closeButton.setTitleColor(textColor, for: UIControl.State.normal)
             nextButton.setTitleColor(textColor, for: UIControl.State.normal)
             backButton.setTitleColor(textColor, for: UIControl.State.normal)
+            infoLabel.textColor = textColor
             self.textColor = textColor
         case let .titleFont(titleFont):
             titleLabel.font = titleFont
+            infoLabel.font = titleFont
             self.titleFont = titleFont
         case let .buttonsFont(buttonsFont):
             closeButton.titleLabel?.font = buttonsFont
@@ -259,6 +262,7 @@ class CRTutorialView: UIView {
             self.backText = backText
         case let .hintColor(hintColor):
             (hintView.layer as! CAShapeLayer).fillColor = hintColor.cgColor
+            infoLabel.backgroundColor = hintColor
             self.hintColor = hintColor
         }
     }
@@ -308,6 +312,18 @@ class CRTutorialView: UIView {
         titleLabel.sizeToFit()
         addSubview(titleLabel)
         
+        infoLabel = UILabel()
+        infoLabel.text = "i"
+        infoLabel.font = titleFont
+        infoLabel.textColor = textColor
+        infoLabel.textAlignment = .center
+        infoLabel.backgroundColor = hintColor
+        infoLabel.sizeToFit()
+        infoLabel.translatesAutoresizingMaskIntoConstraints = false
+        infoLabel.layer.cornerRadius = infoLabel.frame.height / 2
+        infoLabel.clipsToBounds = true
+        addSubview(infoLabel)
+        
         closeButton = makeActionButton(with: closeText, and: #selector(closeTapped(_:)))
         vibrancyEffectView.contentView.addSubview(closeButton)
         
@@ -349,6 +365,8 @@ class CRTutorialView: UIView {
             stackView.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor, constant: 8),
             stackView.leftAnchor.constraint(equalTo: self.safeAreaLayoutGuide.leftAnchor, constant: 0),
             stackView.rightAnchor.constraint(equalTo: self.safeAreaLayoutGuide.rightAnchor, constant: 0),
+            infoLabel.rightAnchor.constraint(equalTo: titleLabel.leftAnchor, constant: -30),
+            infoLabel.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor, constant: 0),
             ])
         let closeHeightConstraint = NSLayoutConstraint(item: closeButton!, attribute: .height, relatedBy: .equal,
                                                            toItem: nil, attribute: .notAnAttribute,
@@ -360,7 +378,14 @@ class CRTutorialView: UIView {
         let stackHeightConstraint = NSLayoutConstraint(item: stackView!, attribute: .height, relatedBy: .equal,
                                                        toItem: nil, attribute: .notAnAttribute,
                                                        multiplier: 1.0, constant: 50.0)
-        addConstraints([closeHeightConstraint, closeWidthConstraint, stackHeightConstraint])
+        let infoHeightConstraint = NSLayoutConstraint(item: infoLabel!, attribute: .height, relatedBy: .equal,
+                                                       toItem: nil, attribute: .notAnAttribute,
+                                                       multiplier: 1.0, constant: infoLabel.frame.height)
+        let infoWidthConstraint = NSLayoutConstraint(item: infoLabel!, attribute: .width, relatedBy: .equal,
+                                                       toItem: nil, attribute: .notAnAttribute,
+                                                       multiplier: 1.0, constant: infoLabel.frame.height)
+        
+        addConstraints([closeHeightConstraint, closeWidthConstraint, stackHeightConstraint, infoHeightConstraint, infoWidthConstraint])
     }
     
     // MARK: - Tap gesture
