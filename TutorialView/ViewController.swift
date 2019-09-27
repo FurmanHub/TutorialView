@@ -27,8 +27,12 @@ class ViewController: UIViewController {
     }
     
     @IBAction func buttonTapped(_ sender: UIButton) {
-        tutoralView.configure(.targets([firstLabel, secondLabel, coloredSquare, actionButton, thirdLabel]),
-                              .hints(["firstLabel", "secondLabel with long long long text ye, really long text here", "coloredSquare text here is needed", "actionButton", "One more for testing asldn asjkdh ajsdjkasdkasdjkasjkd aksd jkashdjkasdjkasjkd asdhaksdhjkas asdkasjkd asjdhh"]))
+        tutoralView.configure(.targets([(firstLabel, "firstLabel"),
+                                        (secondLabel, "secondLabel with long long long text ye, really long text here"),
+                                        (coloredSquare, "coloredSquare text here is needed"),
+                                        (actionButton, "actionButton"),
+                                        (thirdLabel, "One more for testing asldn asjkdh ajsdjkasdkasdjkasjkd aksd jkashdjkasdjkasjkd asdhaksdhjkas asdkasjkd asjdhh")])
+                              )
         tutoralView.show()
     }
     

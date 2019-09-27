@@ -8,26 +8,15 @@
 
 import UIKit
 
-class CRTutorialView: UIView {
+// add private lazy var tutoralView = CRTutorialView(frame: self.view.frame)
+// to your UIViewController
+// than
+// call
+// tutoralView.configure(...)
+// tutoralView.show()
+// to start tutorial
 
-    enum Part {
-        case targets([UIView])
-        case hints([String])
-        case cornerRadius(CGFloat)
-        case hintCornerRadius(CGFloat)
-        case borderColor(UIColor)
-        case borderWidth(CGFloat)
-        case animationDuration(CFTimeInterval)
-        case textColor(UIColor)
-        case titleFont(UIFont)
-        case buttonsFont(UIFont)
-        case opacity(Float)
-        case title(String)
-        case closeText(String)
-        case backText(String)
-        case nextText(String)
-        case hintColor(UIColor)
-    }
+class CRTutorialView: UIView {
     
     class HintView: UIView {
         enum HintPosition {
@@ -80,7 +69,7 @@ class CRTutorialView: UIView {
             position = type
         }
         
-        func setupBezier() {
+        private func setupBezier() {
             guard let layer = layer as? CAShapeLayer else { return }
             
             let path = UIBezierPath()
@@ -167,23 +156,25 @@ class CRTutorialView: UIView {
     private var backText: String = "BACK"
     private var nextText: String = "NEXT"
     private var hintColor: UIColor = UIColor(red: 84/255.0, green: 167/255.0, blue: 242/255.0, alpha: 1)
+    private var hideTopBar: Bool = false
+    private var hideBottomBar: Bool = false
     
     // MARK: - subviews
     
-    var presentationWindow = UIWindow(frame: UIScreen.main.bounds)
-    var blurEffect: UIBlurEffect!
-    var blurEffectView: UIVisualEffectView!
-    var vibrancyEffect: UIVibrancyEffect!
-    var vibrancyEffectView: UIVisualEffectView!
-    var borderView: UIView!
-    var hintView: HintView!
-    var titleLabel: UILabel!
-    var infoLabel: UILabel!
-    var closeButton: UIButton!
-    var backButton: UIButton!
-    var nextButton: UIButton!
-    var pageControl: UIPageControl!
-    var stackView: UIStackView!
+    private var presentationWindow = UIWindow(frame: UIScreen.main.bounds)
+    private var blurEffect: UIBlurEffect!
+    private var blurEffectView: UIVisualEffectView!
+    private var vibrancyEffect: UIVibrancyEffect!
+    private var vibrancyEffectView: UIVisualEffectView!
+    private var borderView: UIView!
+    private var hintView: HintView!
+    private var titleLabel: UILabel!
+    private var infoLabel: UILabel!
+    private var closeButton: UIButton!
+    private var backButton: UIButton!
+    private var nextButton: UIButton!
+    private var pageControl: UIPageControl!
+    private var stackView: UIStackView!
     
     // MARK: - Life cycle
     override init(frame rect: CGRect) {
@@ -196,24 +187,46 @@ class CRTutorialView: UIView {
     }
     
     // MARK: - Configure
+    
+    enum Part {
+        case targets([(target: UIView, hint: String)])
+        case cornerRadius(CGFloat)
+        case hintCornerRadius(CGFloat)
+        case borderColor(UIColor)
+        case borderWidth(CGFloat)
+        case animationDuration(CFTimeInterval)
+        case textColor(UIColor)
+        case titleFont(UIFont)
+        case buttonsFont(UIFont)
+        case opacity(Float)
+        case title(String)
+        case closeText(String)
+        case backText(String)
+        case nextText(String)
+        case hintColor(UIColor)
+        case hideBottomBar(Bool)
+        case hideTopBar(Bool)
+    }
+    
+    // use .targets([(firstLabel, "firstLabel"), ...]) to basic configuration
+    // can add any other customization keys from Parts enum
     func configure(_ parts: Part...) {
         for part in parts {
             updateProperty(part)
         }
     }
     
-    func updateProperty(_ part: Part) {
+    private func updateProperty(_ part: Part) {
         switch part {
         case let .targets(views):
             for view in views {
-                targets.append(CGRect(x: view.frame.origin.x - 5,
-                                      y: view.frame.origin.y - 5,
-                                      width: view.frame.size.width + 10,
-                                      height: view.frame.size.height + 10))
+                targets.append(CGRect(x: view.target.frame.origin.x - 5,
+                                      y: view.target.frame.origin.y - 5,
+                                      width: view.target.frame.size.width + 10,
+                                      height: view.target.frame.size.height + 10))
+                hints.append(view.hint)
             }
             pageControl.numberOfPages = targets.count
-        case let .hints(hints):
-            self.hints = hints
         case let .cornerRadius(cornerRadius):
             self.borderView.layer.cornerRadius = cornerRadius
             self.cornerRadius = cornerRadius
@@ -264,10 +277,18 @@ class CRTutorialView: UIView {
             (hintView.layer as! CAShapeLayer).fillColor = hintColor.cgColor
             infoLabel.backgroundColor = hintColor
             self.hintColor = hintColor
+        case let .hideBottomBar(hidden):
+            stackView.isHidden = hidden
+            self.hideBottomBar = hidden
+        case let .hideTopBar(hidden):
+            titleLabel.isHidden = hidden
+            infoLabel.isHidden = hidden
+            closeButton.isHidden = hidden
+            self.hideTopBar = hidden
         }
     }
     
-    func setup() {
+    private func setup() {
         //alpha = 0
         setupTapGesture()
         setupSubviews()
@@ -310,6 +331,7 @@ class CRTutorialView: UIView {
         titleLabel.textColor = textColor
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.sizeToFit()
+        titleLabel.isHidden = hideTopBar
         addSubview(titleLabel)
         
         infoLabel = UILabel()
@@ -322,9 +344,11 @@ class CRTutorialView: UIView {
         infoLabel.translatesAutoresizingMaskIntoConstraints = false
         infoLabel.layer.cornerRadius = infoLabel.frame.height / 2
         infoLabel.clipsToBounds = true
+        infoLabel.isHidden = hideTopBar
         addSubview(infoLabel)
         
         closeButton = makeActionButton(with: closeText, and: #selector(closeTapped(_:)))
+        closeButton.isHidden = hideTopBar
         vibrancyEffectView.contentView.addSubview(closeButton)
         
         nextButton = makeActionButton(with: nextText, and: #selector(nextTapped(_:)))
@@ -341,12 +365,14 @@ class CRTutorialView: UIView {
         stackView.distribution = .fillEqually
         stackView.axis = .horizontal
         stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.isHidden = hideBottomBar
         addSubview(stackView)
+        
         
         setupConstraints()
     }
     
-    func makeActionButton(with title: String, and selector: Selector) -> UIButton {
+    private func makeActionButton(with title: String, and selector: Selector) -> UIButton {
         let button = UIButton(type: .custom)
         button.setTitle(title, for: .normal)
         button.setTitleColor(textColor, for: .normal)
@@ -356,7 +382,7 @@ class CRTutorialView: UIView {
         return button
     }
     
-    func setupConstraints() {
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             titleLabel.centerXAnchor.constraint(equalTo: self.centerXAnchor, constant: 0),
             titleLabel.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 8),
@@ -391,13 +417,37 @@ class CRTutorialView: UIView {
     // MARK: - Tap gesture
     private func setupTapGesture() {
         addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapHandler)))
+        
+        let left = UISwipeGestureRecognizer(target : self, action : #selector(leftSwipe))
+        left.direction = .left
+        addGestureRecognizer(left)
+        
+        let right = UISwipeGestureRecognizer(target : self, action : #selector(rightSwipe))
+        right.direction = .right
+        addGestureRecognizer(right)
     }
     
-    @objc func tapHandler(sender: UITapGestureRecognizer) {
+    @objc private func leftSwipe(){
+        if currentStep == targets.count - 1 {
+            hide()
+        } else {
+            currentStep = currentStep + 1
+            prepareTutorialStep()
+        }
+    }
+    
+    @objc private func rightSwipe(){
+        if currentStep > 0 {
+            currentStep = currentStep - 1
+            prepareTutorialStep()
+        }
+    }
+    
+    @objc private func tapHandler(sender: UITapGestureRecognizer) {
         showNextStep()
     }
     
-    func showNextStep() {
+    private func showNextStep() {
         if currentStep == targets.count - 1 {
             hide()
         } else {
@@ -408,30 +458,31 @@ class CRTutorialView: UIView {
     
     //MARK: - Actions
     
-    @objc func closeTapped(_ sender: UIButton) {
+    @objc private func closeTapped(_ sender: UIButton) {
         hide()
     }
     
-    @objc func nextTapped(_ sender: UIButton) {
+    @objc private func nextTapped(_ sender: UIButton) {
         showNextStep()
     }
     
-    @objc func backTapped(_ sender: UIButton) {
+    @objc private func backTapped(_ sender: UIButton) {
         currentStep = currentStep - 1
         prepareTutorialStep()
     }
     
     // MARK: - Show/hide
     
-    func show(animated: Bool = true) {
+    func show(animationDuration: CFTimeInterval = 0.7) {
         presentationWindow.windowLevel = .alert + 1
-        UIView.animate(withDuration: 0.7) {[weak self] in
+        UIView.animate(withDuration: animationDuration) {[weak self] in
             guard let self = self else { return }
             self.hintView.alpha = 1
             self.borderView.alpha = 1
             self.titleLabel.alpha = 1
             self.stackView.alpha = 1
             self.closeButton.alpha = 1
+            self.infoLabel.alpha = 1
             self.blurEffectView.effect = self.blurEffect
         }
         let vc = UIViewController()
@@ -454,6 +505,7 @@ class CRTutorialView: UIView {
             self.titleLabel.alpha = 0
             self.stackView.alpha = 0
             self.closeButton.alpha = 0
+            self.infoLabel.alpha = 0
         })
         UIView.animate(withDuration: 0.8, animations: { [weak self] in
             guard let self = self else { return }
@@ -470,7 +522,7 @@ class CRTutorialView: UIView {
         })
     }
     
-    func prepareTutorialStep() {
+    private func prepareTutorialStep() {
         guard let mask = blurEffectView.layer.mask as? CAShapeLayer else { return }
         
         self.hintView.alpha = 0
@@ -488,7 +540,7 @@ class CRTutorialView: UIView {
         CATransaction.commit()
     }
     
-    func makeBorderBezierPath() -> UIBezierPath {
+    private func makeBorderBezierPath() -> UIBezierPath {
         let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: bounds.size.width, height: bounds.size.height))
         let selectedFramePath = UIBezierPath(roundedRect: targets[currentStep], cornerRadius: cornerRadius)
         path.append(selectedFramePath)
@@ -496,7 +548,7 @@ class CRTutorialView: UIView {
         return path
     }
 
-    func makeHintView() {
+    private func makeHintView() {
         var position: HintView.HintPosition = .top
         var arrowCenter = CGPoint.zero
         var hintFrame = CGRect.zero
@@ -557,7 +609,7 @@ class CRTutorialView: UIView {
     
     //MARK: - Animations
     
-    func addLayerAnimation(to mask: CAShapeLayer, with path: CGPath) {
+    private func addLayerAnimation(to mask: CAShapeLayer, with path: CGPath) {
         let maskAnimation = CABasicAnimation(keyPath: "path")
         maskAnimation.fromValue = mask.path
         maskAnimation.toValue = path
@@ -566,7 +618,7 @@ class CRTutorialView: UIView {
         mask.add(maskAnimation, forKey: nil)
     }
     
-    func addBorderAnimation(to layer: CALayer, with frame: CGRect) {
+    private func addBorderAnimation(to layer: CALayer, with frame: CGRect) {
         let positionAnimation = CABasicAnimation(keyPath: "position")
         positionAnimation.fromValue = layer.value(forKey: "position")
         positionAnimation.toValue = NSValue(cgPoint: CGPoint(x: frame.midX, y: frame.midY))

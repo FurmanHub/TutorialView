@@ -2,14 +2,13 @@
 
 [TASK](https://jira.cleveroad.com/browse/IOSI-19)
 
-![](https://files.slack.com/files-pri/T072RDN6T-FN1TE0RQD/image.png)
+![](https://i.imgur.com/tvP5wYE.png)
 
 > Design.
 
 ## View Custom params
 
-- targets([UIView])
-- hints([String])
+- targets([UIView, String])
 - cornerRadius(CGFloat)
 - hintCornerRadius(CGFloat)
 - borderColor(UIColor)
@@ -24,5 +23,7 @@
 - backText(String)
 - nextText(String)
 - hintColor(UIColor)
+- hideBottomBar(Bool)
+- hideTopBar(Bool)
 
      
