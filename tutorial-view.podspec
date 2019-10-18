@@ -10,7 +10,7 @@ Pod::Spec.new do |spec|
 
 
   spec.name         = "tutorial-view"
-  spec.version      = "0.0.2"
+  spec.version      = "0.0.3"
   spec.summary      = "Tutorial View"
 
   spec.description  = "Cleveroad Tutorial View"
