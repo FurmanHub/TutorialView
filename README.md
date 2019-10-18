@@ -26,4 +26,16 @@
 - hideBottomBar(Bool)
 - hideTopBar(Bool)
 
-     
+## Installation
+
+Add source of Tutorial-View to your pod file
+
+```
+source 'https://github.com/FurmanHub/TutorialView.git'
+```
+
+and simply add 
+
+```
+pod 'tutorial-view'
+```
